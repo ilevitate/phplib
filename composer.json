@@ -3,6 +3,7 @@
     "description": "some common functions and tools! 简单的一些常用的函数或工具",
     "license": "MIT",
     "homepage": "https://github.com/ilevitate/phplib",
+    "minimum-stability": "stable",
     "authors": [
         {
             "name": "iLevitate",
