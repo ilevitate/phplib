@@ -1,0 +1,21 @@
+{
+    "name": "ilevitate/phplibs",
+    "description": "some common functions and tools! 简单的一些常用的函数或工具",
+    "license": "MIT",
+    "homepage": "https://github.com/ilevitate/phplib",
+    "authors": [
+        {
+            "name": "iLevitate",
+            "email": "17771767971@163.com",
+            "homepage": "https://github.com/ilevitate"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Utils\\": "src/Utils"
+        }
+    }
+}
