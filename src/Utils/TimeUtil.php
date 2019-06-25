@@ -9,6 +9,8 @@
 namespace Utils;
 
 
+use DateTime;
+
 class TimeUtil
 {
 
@@ -20,7 +22,7 @@ class TimeUtil
     public static function isSevenDaysAgo($time)
     {
         $sign = time() - (60 * 60 * 24 * 7);
-        if ($time < $sign){
+        if ($time < $sign) {
             return true;
         }
 
@@ -74,7 +76,6 @@ class TimeUtil
     }
 
 
-
     /**
      * 计算倒计时
      * @param $endTime
@@ -87,9 +88,9 @@ class TimeUtil
         $remain_hour = floor($remain_time / (60 * 60)); //剩余的小时
         $remain_minute = floor(($remain_time - $remain_hour * 60 * 60) / 60); //剩余的分钟数
         $remain_second = ($remain_time - $remain_hour * 60 * 60 - $remain_minute * 60); //剩余的秒数
-        if ($remain_time <= 0){
+        if ($remain_time <= 0) {
             $da = 0;
-        }else{
+        } else {
             $da = $remain_hour . '时' . $remain_minute . '分' . $remain_second . '秒';
         }
 
@@ -161,13 +162,13 @@ class TimeUtil
     {
         $nowTime = time();
         $second = $nowTime - $time;
-        if ($second < 60){
+        if ($second < 60) {
             $desc = $second . '秒前';
-        }elseif ($second < 60 * 60){
+        } elseif ($second < 60 * 60) {
             $desc = floor($second / 60) . '分钟前';
-        }elseif ($second < 60 * 60 * 24){
+        } elseif ($second < 60 * 60 * 24) {
             $desc = floor($second / (60 * 60)) . '小时前';
-        }else{
+        } else {
             $desc = floor($second / (60 * 60 * 24)) . '天前';
         }
 
@@ -185,11 +186,11 @@ class TimeUtil
         $dates = [];
         array_push($dates, $startDate);
         $currentDate = $startDate;
-        do{
+        do {
             $nextDate = date('Ymd', strtotime($currentDate . ' +1 days'));
             array_push($dates, $nextDate);
             $currentDate = $nextDate;
-        }while($endDate != $currentDate);
+        } while ($endDate != $currentDate);
 
         return $dates;
 
@@ -208,13 +209,50 @@ class TimeUtil
         $second1 = strtotime($day1);
         $second2 = strtotime($day2);
 
-        if ($second1 < $second2){
+        if ($second1 < $second2) {
             $tmp = $second2;
             $second2 = $second1;
             $second1 = $tmp;
         }
 
         return ($second1 - $second2) / 86400;
+    }
+
+
+    /***
+     * 计算两个时间的间隔天数
+     * @param datetime $date1 减数
+     * @param datetime $date2 被减数
+     * @return string {$d}天{$h}小时{$m}分
+     */
+    public static function getDateDiff($date1, $date2)
+    {
+        $a = strtotime($date1);
+        $b = strtotime($date2);
+        $cle = $a - $b;
+
+        $d = floor($cle / 3600 / 24);
+        $h = floor(($cle % (3600 * 24)) / 3600);  //%取余
+        $m = floor(($cle % (3600 * 24)) % 3600 / 60);
+        return "{$d}天{$h}小时{$m}分";
+    }
+
+    /**
+     *  秒转换为 小时分钟
+     * @param $times 秒
+     * @param string $format 格式化
+     * @return  string
+     */
+    public static function secondToTime($times, $format = '%s天%s小时%s分钟')
+    {
+        $result = '00:00:00';
+        if ($times > 0) {
+            $hour = floor($times / 3600);
+            $minute = floor(($times - 3600 * $hour) / 60);
+            $second = floor((($times - 3600 * $hour) - 60 * $minute) % 60);
+            $result = sprintf($format, $hour, $minute, $second);
+        }
+        return $result;
     }
 
 }

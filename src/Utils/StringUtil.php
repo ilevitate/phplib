@@ -11,6 +11,65 @@ namespace Utils;
 class StringUtil
 {
 
+
+    /**
+     * 下划线转驼峰
+     * @param $str
+     * @return string|string[]|null
+     */
+    public static function convertUnderline($str)
+    {
+        $str = preg_replace_callback('/([-_]+([a-z]{1}))/i', function ($matches) {
+            return strtoupper($matches[2]);
+        }, $str);
+        return $str;
+    }
+
+    /**
+     * 驼峰转下划线
+     * @param $str
+     * @return string|string[]|null
+     */
+    public static function humpToLine($str)
+    {
+        $str = preg_replace_callback('/([A-Z]{1})/', function ($matches) {
+            return '_' . strtolower($matches[0]);
+        }, $str);
+        return $str;
+    }
+
+    /**
+     * 字符串截断函数（超出长度，结尾自动带上...）
+     * @param string $string
+     * @param int $length
+     * @param string $etc
+     * @return string
+     */
+    public static function short($string, $length, $etc = '...')
+    {
+        $result = '';
+        $string = html_entity_decode(trim(strip_tags($string)), ENT_QUOTES, 'UTF-8');
+        $strlen = strlen($string);
+        for ($i = 0; (($i < $strlen) && ($length > 0)); $i++) {
+            if ($number = strpos(str_pad(decbin(ord(substr($string, $i, 1))), 8, '0', STR_PAD_LEFT), '0')) {
+                if ($length < 1.0) {
+                    break;
+                }
+                $result .= substr($string, $i, $number);
+                $length -= 1.0;
+                $i += $number - 1;
+            } else {
+                $result .= substr($string, $i, 1);
+                $length -= 0.5;
+            }
+        }
+        $result = htmlspecialchars($result, ENT_QUOTES, 'UTF-8');
+        if ($i < $strlen) {
+            $result .= $etc;
+        }
+        return $result;
+    }
+
     public static function filter($str)
     {
         $value = json_encode($str);
@@ -146,21 +205,21 @@ class StringUtil
         $to = strtoupper($to) == 'UTF8' ? 'utf-8' : $to;
         if (strtoupper($from) === strtoupper($to) || empty($contents)
             || (is_scalar($contents)
-                && !is_string($contents))){
+                && !is_string($contents))) {
             return $contents;
         }
 
-        if (is_string($contents)){
+        if (is_string($contents)) {
             return function_exists('mb_convert_encoding') ? mb_convert_encoding($contents, $to, $from) : (function_exists('iconv') ? iconv($from, $to, $contents) : $contents);
-        }elseif (is_array($contents)){
+        } elseif (is_array($contents)) {
             $_contents = [];
-            foreach($contents as $key => $value){
+            foreach ($contents as $key => $value) {
                 $_key = $changeKeyCharset ? call_user_func(__METHOD__, $key, $from, $to) : $key;
                 $_contents[$_key] = call_user_func(__METHOD__, $value, $from, $to);
             }
 
             return $_contents;
-        }else{
+        } else {
             return $contents;
         }
     }
@@ -168,11 +227,11 @@ class StringUtil
     /**
      * 函数msubstr,实现中文截取字符串;
      *
-     * @param   str string [必选] 需要截取的字符串;
-     * @param   length int [必须] 截取字符的长度,按照一个汉字的长度算作一个字符;
-     * @param   start string [可选] 从那里开始截取;
-     * @param   suffix string [可选] 截取字符后加上的后缀,默认为@...;
-     * @param   charset enum('gbk','utf-8') [可选] 字符的编码,默认为@utf-8;
+     * @param str string [必选] 需要截取的字符串;
+     * @param length int [必须] 截取字符的长度,按照一个汉字的长度算作一个字符;
+     * @param start string [可选] 从那里开始截取;
+     * @param suffix string [可选] 截取字符后加上的后缀,默认为@...;
+     * @param charset enum('gbk','utf-8') [可选] 字符的编码,默认为@utf-8;
      *
      * @return string;
      */
@@ -180,7 +239,7 @@ class StringUtil
     {
         $length = null === $length ? strlen($length) : $length;
 
-        switch($charset){
+        switch ($charset) {
             case 'utf-8':
                 $charLen = 3;
                 break;
@@ -191,13 +250,13 @@ class StringUtil
                 $charLen = 2;
         }
         // 小于指定长度，直接返回
-        if (strlen($str) <= ($length * $charLen)){
+        if (strlen($str) <= ($length * $charLen)) {
             return $str;
-        }elseif (function_exists('mb_substr')){
+        } elseif (function_exists('mb_substr')) {
             $slice = mb_substr($str, $start, $length, $charset);
-        }elseif (function_exists('iconv_substr')){
+        } elseif (function_exists('iconv_substr')) {
             $slice = iconv_substr($str, $start, $length, $charset);
-        }else{
+        } else {
             $re['utf-8'] = "/[\x01-\x7f]|[\xc2-\xdf][\x80-\xbf]|[\xe0-\xef][\x80-\xbf]{2}|[\xf0-\xff][\x80-\xbf]{3}/";
             $re['gb2312'] = "/[\x01-\x7f]|[\xb0-\xf7][\xa0-\xfe]/";
             $re['gbk'] = "/[\x01-\x7f]|[\x81-\xfe][\x40-\xfe]/";
@@ -231,7 +290,7 @@ class StringUtil
      */
     public static function substrCN($string, $length = 80, $charset = 'UTF-8', $etc = '...')
     {
-        if (mb_strwidth($string, 'UTF-8') <= $length){
+        if (mb_strwidth($string, 'UTF-8') <= $length) {
             return $string;
         }
 
@@ -286,32 +345,32 @@ class StringUtil
         $len = strlen($str);
         $a = 0;
         $scill = '';
-        while($a < $len){
+        while ($a < $len) {
             $ud = 0;
-            if (ord($str{$a}) >= 0 && ord($str{$a}) <= 127){
+            if (ord($str{$a}) >= 0 && ord($str{$a}) <= 127) {
                 $ud = ord($str{$a});
                 $a += 1;
-            }elseif (ord($str{$a}) >= 192 && ord($str{$a}) <= 223){
+            } elseif (ord($str{$a}) >= 192 && ord($str{$a}) <= 223) {
                 $ud = (ord($str{$a}) - 192) * 64 + (ord($str{$a + 1}) - 128);
                 $a += 2;
-            }elseif (ord($str{$a}) >= 224 && ord($str{$a}) <= 239){
+            } elseif (ord($str{$a}) >= 224 && ord($str{$a}) <= 239) {
                 $ud = (ord($str{$a}) - 224) * 4096 + (ord($str{$a + 1}) - 128) * 64 + (ord($str{$a + 2}) - 128);
                 $a += 3;
-            }elseif (ord($str{$a}) >= 240 && ord($str{$a}) <= 247){
+            } elseif (ord($str{$a}) >= 240 && ord($str{$a}) <= 247) {
                 $ud = (ord($str{$a}) - 240) * 262144 + (ord($str{$a + 1}) - 128) * 4096 + (ord($str{$a + 2}) - 128) * 64 + (ord($str{$a + 3}) - 128);
                 $a += 4;
-            }elseif (ord($str{$a}) >= 248 && ord($str{$a}) <= 251){
+            } elseif (ord($str{$a}) >= 248 && ord($str{$a}) <= 251) {
                 $ud = (ord($str{$a}) - 248) * 16777216 + (ord($str{$a + 1}) - 128) * 262144 + (ord($str{$a + 2}) - 128) * 4096 + (ord($str{$a + 3})
                         - 128) * 64
                     + (ord($str{$a + 4}) - 128);
                 $a += 5;
-            }elseif (ord($str{$a}) >= 252 && ord($str{$a}) <= 253){
+            } elseif (ord($str{$a}) >= 252 && ord($str{$a}) <= 253) {
                 $ud = (ord($str{$a}) - 252) * 1073741824 + (ord($str{$a + 1}) - 128) * 16777216 + (ord($str{$a + 2}) - 128) * 262144 + (ord($str{$a
                         + 3})
                         - 128) * 4096
                     + (ord($str{$a + 4}) - 128) * 64 + (ord($str{$a + 5}) - 128);
                 $a += 6;
-            }elseif (ord($str{$a}) >= 254 && ord($str{$a}) <= 255){
+            } elseif (ord($str{$a}) >= 254 && ord($str{$a}) <= 255) {
                 $ud = false;
             }
             $scill .= "&#$ud;";
@@ -323,7 +382,7 @@ class StringUtil
     /**
      * 函数_asciiHtmlEntityDecode,把html实体转换为普通字符;
      *
-     * @param  str string    [必选]    需要转换的字符;
+     * @param str string    [必选]    需要转换的字符;
      *
      * @return string;
      */
@@ -332,13 +391,13 @@ class StringUtil
         preg_match_all('/(d{2,5})/', $str, $a);
         $a = $a[0];
         $utf = '';
-        foreach($a as $dec){
-            if ($dec < 128){
+        foreach ($a as $dec) {
+            if ($dec < 128) {
                 $utf .= chr($dec);
-            }elseif ($dec < 2048){
+            } elseif ($dec < 2048) {
                 $utf .= chr(192 + (($dec - ($dec % 64)) / 64));
                 $utf .= chr(128 + ($dec % 64));
-            }else{
+            } else {
                 $utf .= chr(224 + (($dec - ($dec % 4096)) / 4096));
                 $utf .= chr(128 + ((($dec % 4096) - ($dec % 64)) / 64));
                 $utf .= chr(128 + ($dec % 64));
@@ -367,7 +426,7 @@ class StringUtil
         $strPolLen = strlen($strPol[$type]);
 
         $string = '';
-        for($i = 0; $i < $length; $i++){
+        for ($i = 0; $i < $length; $i++) {
             $string .= $strPol[$type][rand(0, $strPolLen - 1)];
         }
 
@@ -383,12 +442,12 @@ class StringUtil
      */
     public static function keywordHighlight($text, array $keywords, $template = '<font color="red">{{keyword}}</font>')
     {
-        if (!is_string($text) || empty($text) || empty($keywords)){
+        if (!is_string($text) || empty($text) || empty($keywords)) {
             return $text;
         }
 
         $from = [];
-        foreach($keywords as $keyword){
+        foreach ($keywords as $keyword) {
             $from[$keyword] = strtr($template, ['{{keyword}}' => $keyword]);
         }
 
